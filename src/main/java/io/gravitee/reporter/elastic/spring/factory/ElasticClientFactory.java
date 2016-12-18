@@ -21,8 +21,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +48,6 @@ public class ElasticClientFactory extends AbstractFactoryBean<Client> {
 		switch (configuration.getProtocol()) {
 			case TRANSPORT:
 				return createTransportClient();
-			case NODE:
-				return createNodeClient();
 			default:
 				LOGGER.error("Unsupported protocol [{}] for elastic client", configuration.getProtocol());
 				throw new IllegalStateException(String.format("Unsupported protocol [%s] for elastic client", configuration.getProtocol()));
@@ -58,8 +55,8 @@ public class ElasticClientFactory extends AbstractFactoryBean<Client> {
 	}
 
 	private Client createTransportClient() {
-		Settings settings = Settings.settingsBuilder().put("cluster.name", configuration.getClusterName()).build();
-		TransportClient transportClient = TransportClient.builder().settings(settings).build();
+		Settings settings = Settings.builder().put("cluster.name", configuration.getClusterName()).build();
+		TransportClient transportClient = new PreBuiltTransportClient(settings);
 
 		List<HostAddress> adresses = configuration.getHostsAddresses();
 
@@ -73,17 +70,5 @@ public class ElasticClientFactory extends AbstractFactoryBean<Client> {
 		}
 
 		return transportClient;
-	}
-
-	private Client createNodeClient() {
-		Settings settings = Settings.settingsBuilder()
-				.put("cluster.name", configuration.getClusterName())
-				.put("gateway.type","none")
-						// .put("index.number_of_shards",numberOfShards)
-						// .put("index.number_of_replicas",0)
-				.build();
-
-		Node node = NodeBuilder.nodeBuilder().settings(settings).client(true).node();
-		return node.client();
 	}
 }

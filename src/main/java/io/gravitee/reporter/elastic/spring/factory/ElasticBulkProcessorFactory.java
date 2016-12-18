@@ -17,6 +17,7 @@ package io.gravitee.reporter.elastic.spring.factory;
 
 import io.gravitee.reporter.elastic.config.ElasticConfiguration;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.ResourceAlreadyExistsException;
 import org.elasticsearch.action.IndicesRequest;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -43,6 +44,9 @@ public class ElasticBulkProcessorFactory extends AbstractFactoryBean<BulkProcess
 
     private final static String FIELD_TYPE = "type";
     private final static String FIELD_TYPE_STRING = "string";
+    private final static String FIELD_TYPE_SHORT = "short";
+    private final static String FIELD_TYPE_INTEGER = "integer";
+    private final static String FIELD_TYPE_BOOLEAN = "boolean";
     private final static String FIELD_INDEX = "index";
     private final static String FIELD_INDEX_NOT_ANALYZED = "not_analyzed";
 
@@ -116,10 +120,10 @@ public class ElasticBulkProcessorFactory extends AbstractFactoryBean<BulkProcess
             LOGGER.debug("Looking for index [{}]", indexName);
             client.admin().indices().prepareCreate(indexName).execute().actionGet();
             return true;
-        } catch (org.elasticsearch.indices.IndexAlreadyExistsException iaee) {
+        } catch (ResourceAlreadyExistsException raee) {
             return false;
         } catch (Exception ex) {
-            LOGGER.error("An error occurs while looking for index", indexName, ex);
+            LOGGER.error("An error occurs while looking for index {}", indexName, ex);
         }
         return false;
     }
@@ -140,6 +144,7 @@ public class ElasticBulkProcessorFactory extends AbstractFactoryBean<BulkProcess
                     .startObject("application").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("subscription").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("plan").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("user").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("api-key").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("hostname").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("uri").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
@@ -150,6 +155,13 @@ public class ElasticBulkProcessorFactory extends AbstractFactoryBean<BulkProcess
                     .startObject("method").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("response-content-type").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .startObject("request-content-type").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("tenant").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("status").field(FIELD_TYPE, FIELD_TYPE_SHORT).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("response-time").field(FIELD_TYPE, FIELD_TYPE_SHORT).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("api-response-time").field(FIELD_TYPE, FIELD_TYPE_SHORT).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("proxy-latency").field(FIELD_TYPE, FIELD_TYPE_SHORT).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("request-content-length").field(FIELD_TYPE, FIELD_TYPE_INTEGER).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                    .startObject("response-content-length").field(FIELD_TYPE, FIELD_TYPE_INTEGER).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                     .endObject()
                     .endObject()
                     .endObject()
@@ -171,9 +183,9 @@ public class ElasticBulkProcessorFactory extends AbstractFactoryBean<BulkProcess
                             .startObject("gateway").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                             .startObject("api").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                             .startObject("hostname").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
-                            .startObject("status").field(FIELD_TYPE, "integer").field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
-                            .startObject("state").field(FIELD_TYPE, "integer").field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
-                            .startObject("success").field(FIELD_TYPE, "boolean").field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                            .startObject("status").field(FIELD_TYPE, FIELD_TYPE_SHORT).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                            .startObject("state").field(FIELD_TYPE, FIELD_TYPE_INTEGER).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
+                            .startObject("success").field(FIELD_TYPE, FIELD_TYPE_BOOLEAN).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                             .startObject("message").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                             .startObject("url").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
                             .startObject("method").field(FIELD_TYPE, FIELD_TYPE_STRING).field(FIELD_INDEX, FIELD_INDEX_NOT_ANALYZED).endObject()
@@ -216,4 +228,3 @@ public class ElasticBulkProcessorFactory extends AbstractFactoryBean<BulkProcess
         }
     }
 }
-
